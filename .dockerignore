@@ -1,0 +1,8 @@
+.git
+.codegraph
+out
+tmp
+bin
+dist
+*.log
+.DS_Store

@@ -1,0 +1,20 @@
+services:
+  uav-camera-calibration-scanner:
+    container_name: uav-camera-calibration-scanner
+    image: ${IMAGE:-uav-camera-calibration-scanner:latest}
+    build:
+      context: .
+    restart: unless-stopped
+    init: true
+    command: ["-config", "/config/config.yml", "-mode", "schedule"]
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ${CONFIG:-./configs/config.yml}:/config/config.yml:ro
+      - ./out/docker:/app/out/docker
+    healthcheck:
+      test: ["CMD-SHELL", "test -r /config/config.yml && test -d /app/out/docker"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

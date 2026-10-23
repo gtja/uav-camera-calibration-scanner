@@ -1,0 +1,137 @@
+# UAV Camera Calibration Scanner runtime config.
+#
+# Production checklist:
+# 1. Configure controlCenter.baseUrl for dynamic device discovery; dbapi.deviceListPath/devices are only fallbacks.
+# 2. Configure vod.baseUrl and keep vod.dryRun=false for real clip export.
+# 3. Configure result.mysqlDsn when results should be written to MySQL.
+# 4. Enable calibration only after VOD clip URLs are reachable from the calibration container.
+
+timezone: Asia/Shanghai
+ruleVersion: downward-photo-v3
+targetModels:
+  - M30T
+  - M30TD
+
+logging:
+  # debug, info, warn, error
+  level: info
+  # json is recommended for Docker/Kubernetes log collection; text is friendlier for manual debugging.
+  format: json
+
+schedule:
+  # Daily scheduled run time. The job scans the previous day's scan.startTime-scan.endTime window.
+  dailyAt: "03:00:00"
+  # Set true only when the service should run immediately after container startup.
+  runOnStart: false
+
+resilience:
+  # Maximum attempts for one external call, including the first call.
+  retryAttempts: 2
+  retryBaseDelayMillis: 500
+  # ControlCenter, DBAPI, VOD and Calibration each have an independent circuit breaker.
+  circuitFailureThreshold: 3
+  circuitOpenSeconds: 300
+  # Hard timeout for one scheduled scan.
+  runTimeoutMinutes: 120
+  # Keep this path on a persistent writable volume in Docker.
+  lockFile: out/docker/run/uav-camera-calibration-scanner.lock
+
+scan:
+  # Fixed previous-day business window.
+  startTime: "09:00:00"
+  endTime: "17:00:00"
+  recordNoMatch: true
+  # 0 means no artificial device limit.
+  maxDevices: 0
+  # Query DBAPI by chunks instead of pulling a full day at once.
+  queryChunkMinutes: 30
+  # Only devices explicitly identified as M30T/M30TD enter DBAPI history scans.
+  preciseDevicePrefilter: true
+
+rule:
+  durationSeconds: 20
+  maxSampleGapSeconds: 3
+  cameraMode: "0"
+  lensType: wide
+  # Optional gimbal/camera model filter from DBAPI properties.gimbalType.
+  # Values are normalized, so M30T_CAMERA and "M30T Camera" are treated as the same.
+  targetGimbalTypes:
+    - M30T_CAMERA
+    - M30TD_CAMERA
+  gimbalPitchMin: -90
+  gimbalPitchMax: -10
+  requireFlightStatus: false
+  minHeightMeters: 5
+  requireFlyTime: true
+  # Exclude hovering clips; the 20s window must travel at least this distance.
+  minTravelMeters: 100
+
+controlCenter:
+  # Preferred dynamic device source. The service queries this once per scan before DBAPI telemetry queries.
+  enabled: true
+  # In-cluster example.
+  baseUrl: http://ja-control-center.jingqi.svc.cluster.local:32041
+  deviceListPath: /openapi/device/list
+  timeoutSeconds: 30
+  # The tested device-list API requires username=admin and groupId=1 headers.
+  username: admin
+  groupId: "1"
+  pageSize: 1000
+  headers: {}
+  # Optional request body merged with page/size for /openapi/device/list.
+  deviceListRequest: {}
+  # Product keys differ by environment; model/gimbal filtering below remains strict.
+  candidateProductKeys: []
+
+dbapi:
+  # Required. Example in cluster: http://db-api:8520/api
+  baseUrl: http://db-api:8520/api
+  # Fallback device-list source only. Leave empty when controlCenter.enabled=true.
+  deviceListPath: ""
+  historyPath: /deviceAttrInfoBack
+  snapshotPath: /uavDeviceAttrBackV2
+  # Leave empty in production. Set configs/samples.example.json only for local dry-run samples.
+  sampleFile: ""
+  timeoutSeconds: 90
+  headers: {}
+  # Optional request body for the device list API.
+  deviceListRequest: {}
+
+vod:
+  # Required. Example in cluster: http://ja-vod:8080
+  baseUrl: http://ja-vod:8080
+  clipPath: /vod/hls2mp4
+  # Export a slightly longer clip to tolerate historical TS discontinuities.
+  clipDurationSeconds: 40
+  timeoutSeconds: 120
+  headers: {}
+  dryRun: false
+
+calibration:
+  # Keep false until object storage/VOD URL reachability has been verified from the calibration container.
+  enabled: false
+  baseUrl: http://auto-photograph:11595
+  createPath: /calibration/create
+  timeoutSeconds: 30
+  fps: 1.0
+  callbackUrl: ""
+  # When enabled, a device with a successful calibration task in the last dedupDays is skipped before DBAPI scanning.
+  dedupEnabled: true
+  dedupDays: 7
+
+artifact:
+  # Complete control-center property JSON is written here.
+  localDir: out/docker/artifacts
+  # Optional public/object-store URL prefix. Empty means local path is stored.
+  urlPrefix: ""
+
+result:
+  # JSONL is kept as an audit/fallback output.
+  jsonlPath: out/docker/results/results.jsonl
+  # Configure this for the result table write. Leave empty to disable MySQL output.
+  mysqlDsn: ""
+  mysqlTable: uav_downward_photo_clip
+
+# Static debug fallback. Leave empty in normal environments.
+# Devices can be prefiltered by targetModels, then finally filtered by rule.targetGimbalTypes from DBAPI telemetry.
+devices: []

@@ -1,0 +1,101 @@
+{
+  "timezone": "Asia/Shanghai",
+  "ruleVersion": "downward-photo-v3",
+  "targetModels": ["M30T", "M30TD"],
+  "logging": {
+    "level": "info",
+    "format": "json"
+  },
+  "schedule": {
+    "dailyAt": "03:00:00",
+    "runOnStart": false
+  },
+  "resilience": {
+    "retryAttempts": 2,
+    "retryBaseDelayMillis": 500,
+    "circuitFailureThreshold": 3,
+    "circuitOpenSeconds": 300,
+    "runTimeoutMinutes": 120,
+    "lockFile": "/tmp/uav-camera-calibration-scanner.lock"
+  },
+  "scan": {
+    "startTime": "09:00:00",
+    "endTime": "17:00:00",
+    "recordNoMatch": true,
+    "maxDevices": 0,
+    "queryChunkMinutes": 30
+  },
+  "rule": {
+    "durationSeconds": 20,
+    "maxSampleGapSeconds": 3,
+    "cameraMode": "0",
+    "lensType": "wide",
+    "targetGimbalTypes": ["M30T_CAMERA"],
+    "gimbalPitchMin": -90,
+    "gimbalPitchMax": -10,
+    "requireFlightStatus": false,
+    "minHeightMeters": 5,
+    "requireFlyTime": true,
+    "minTravelMeters": 100
+  },
+  "controlCenter": {
+    "enabled": false,
+    "baseUrl": "http://ja-control-center:32041",
+    "deviceListPath": "/openapi/device/list",
+    "timeoutSeconds": 30,
+    "username": "admin",
+    "groupId": "1",
+    "pageSize": 1000,
+    "headers": {},
+    "deviceListRequest": {},
+    "candidateProductKeys": ["00000000002", "zyrFih3kept"]
+  },
+  "dbapi": {
+    "baseUrl": "http://127.0.0.1:8520/api",
+    "deviceListPath": "",
+    "historyPath": "/deviceAttrInfoBack",
+    "snapshotPath": "/uavDeviceAttrBackV2",
+    "sampleFile": "configs/samples.example.json",
+    "timeoutSeconds": 60,
+    "headers": {},
+    "deviceListRequest": {}
+  },
+  "vod": {
+    "baseUrl": "http://ja-vod/vod-api",
+    "clipPath": "/vod/hls2mp4",
+    "clipDurationSeconds": 20,
+    "timeoutSeconds": 120,
+    "headers": {},
+    "dryRun": true
+  },
+  "calibration": {
+    "enabled": false,
+    "baseUrl": "http://auto-photograph:5000",
+    "createPath": "/calibration/create",
+    "timeoutSeconds": 30,
+    "fps": 1.0,
+    "callbackUrl": "",
+    "dedupEnabled": true,
+    "dedupDays": 7
+  },
+  "artifact": {
+    "localDir": "out/artifacts",
+    "urlPrefix": ""
+  },
+  "result": {
+    "jsonlPath": "out/results.jsonl",
+    "mysqlDsn": "",
+    "mysqlTable": "uav_downward_photo_clip"
+  },
+  "devices": [
+    {
+      "productKey": "zyrFih3kept",
+      "deviceId": "34010000006011180900",
+      "deviceName": "example M30T",
+      "model": "M30T",
+      "tags": {
+        "DEVICE_MODEL": "M30T"
+      }
+    }
+  ]
+}

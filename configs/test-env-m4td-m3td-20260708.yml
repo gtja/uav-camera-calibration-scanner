@@ -1,0 +1,99 @@
+timezone: Asia/Shanghai
+ruleVersion: downward-photo-v3-m4td-m3td
+targetModels:
+  - M3TD
+  - M4TD
+  - MATRICE_4T
+
+logging:
+  level: info
+  format: json
+
+schedule:
+  dailyAt: "03:00:00"
+  runOnStart: false
+
+resilience:
+  retryAttempts: 2
+  retryBaseDelayMillis: 500
+  circuitFailureThreshold: 3
+  circuitOpenSeconds: 300
+  runTimeoutMinutes: 120
+  lockFile: out/docker/run/uav-camera-calibration-scanner-m4td-m3td.lock
+
+scan:
+  startTime: "09:00:00"
+  endTime: "17:00:00"
+  recordNoMatch: true
+  maxDevices: 0
+  queryChunkMinutes: 30
+  preciseDevicePrefilter: true
+
+rule:
+  durationSeconds: 20
+  maxSampleGapSeconds: 3
+  cameraMode: "0"
+  lensType: wide
+  targetGimbalTypes:
+    - M3TD_CAMERA
+    - M4TD_CAMERA
+    - MATRICE_4T
+  gimbalPitchMin: -90
+  gimbalPitchMax: -10
+  requireFlightStatus: false
+  minHeightMeters: 5
+  requireFlyTime: true
+  minTravelMeters: 100
+
+controlCenter:
+  enabled: true
+  baseUrl: http://47.111.155.82:32041
+  deviceListPath: /openapi/device/list
+  timeoutSeconds: 30
+  username: admin
+  groupId: "1"
+  pageSize: 1000
+  headers: {}
+  deviceListRequest: {}
+  candidateProductKeys:
+    - "00000000002"
+    - zyrFih3kept
+
+dbapi:
+  baseUrl: http://47.111.155.82:31521/api
+  deviceListPath: ""
+  historyPath: /deviceAttrInfoBack
+  snapshotPath: /uavDeviceAttrBackV2
+  sampleFile: ""
+  timeoutSeconds: 90
+  headers: {}
+  deviceListRequest: {}
+
+vod:
+  baseUrl: http://47.111.155.82:31119
+  clipPath: /vod/hls2mp4
+  clipDurationSeconds: 40
+  timeoutSeconds: 180
+  headers: {}
+  dryRun: false
+
+calibration:
+  enabled: true
+  baseUrl: http://121.196.145.43:11595
+  createPath: /calibration/create
+  timeoutSeconds: 30
+  fps: 1.0
+  callbackUrl: ""
+  dedupEnabled: true
+  dedupDays: 7
+
+artifact:
+  localDir: out/docker/artifacts
+  urlPrefix: ""
+
+result:
+  jsonlPath: out/docker/results/test-env-m4td-m3td-results.jsonl
+  mysqlDsn: ""
+  mysqlTable: uav_downward_photo_clip
+
+devices: []

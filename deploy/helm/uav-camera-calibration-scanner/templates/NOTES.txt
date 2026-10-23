@@ -1,0 +1,10 @@
+uav-camera-calibration-scanner has been deployed.
+
+Check the pod:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Follow logs:
+  kubectl -n {{ .Release.Namespace }} logs deploy/{{ include "uav-camera-calibration-scanner.fullname" . }} -f --tail=100
+
+Rendered image:
+  {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}

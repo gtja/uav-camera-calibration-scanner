@@ -1,0 +1,10 @@
+ARG BASE_IMAGE=registry.jingan.com:32008/ja/uav-day-video-detector:v0.1.0.260708
+FROM ${BASE_IMAGE}
+
+USER root
+COPY uav-camera-calibration-scanner /usr/local/bin/uav-camera-calibration-scanner
+RUN chmod 0755 /usr/local/bin/uav-camera-calibration-scanner
+USER app
+
+ENTRYPOINT ["uav-camera-calibration-scanner"]
+CMD ["-config", "/app/configs/config.yml", "-mode", "schedule"]

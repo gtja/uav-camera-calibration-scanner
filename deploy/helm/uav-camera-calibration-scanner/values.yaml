@@ -1,0 +1,141 @@
+image:
+  repository: registry.jingan.com:32008/ja/uav-camera-calibration-scanner
+  tag: v0.1.0
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+timezone: Asia/Shanghai
+runMode: schedule
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  fsGroupChangePolicy: OnRootMismatch
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+persistence:
+  enabled: true
+  existingClaim: ""
+  storageClass: ""
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+config: |
+  timezone: Asia/Shanghai
+  ruleVersion: downward-photo-v3
+  targetModels:
+    - M30T
+    - M30TD
+
+  logging:
+    level: info
+    format: json
+
+  schedule:
+    dailyAt: "03:00:00"
+    runOnStart: false
+
+  resilience:
+    retryAttempts: 2
+    retryBaseDelayMillis: 500
+    circuitFailureThreshold: 3
+    circuitOpenSeconds: 300
+    runTimeoutMinutes: 120
+    lockFile: out/docker/run/uav-camera-calibration-scanner.lock
+
+  scan:
+    startTime: "09:00:00"
+    endTime: "17:00:00"
+    recordNoMatch: true
+    maxDevices: 0
+    queryChunkMinutes: 30
+
+  rule:
+    durationSeconds: 20
+    maxSampleGapSeconds: 3
+    cameraMode: "0"
+    lensType: wide
+    targetGimbalTypes:
+      - M30T_CAMERA
+    gimbalPitchMin: -90
+    gimbalPitchMax: -10
+    requireFlightStatus: false
+    minHeightMeters: 5
+    requireFlyTime: true
+    minTravelMeters: 100
+
+  controlCenter:
+    enabled: true
+    baseUrl: http://ja-control-center.jingqi.svc.cluster.local:32041
+    deviceListPath: /openapi/device/list
+    timeoutSeconds: 30
+    username: admin
+    groupId: "1"
+    pageSize: 1000
+    headers: {}
+    deviceListRequest: {}
+    candidateProductKeys:
+      - "00000000002"
+      - zyrFih3kept
+
+  dbapi:
+    baseUrl: http://db-api:8520/api
+    deviceListPath: ""
+    historyPath: /deviceAttrInfoBack
+    snapshotPath: /uavDeviceAttrBackV2
+    sampleFile: ""
+    timeoutSeconds: 90
+    headers: {}
+    deviceListRequest: {}
+
+  vod:
+    baseUrl: http://ja-vod:8080
+    clipPath: /vod/hls2mp4
+    clipDurationSeconds: 40
+    timeoutSeconds: 120
+    headers: {}
+    dryRun: false
+
+  calibration:
+    enabled: false
+    baseUrl: http://auto-photograph:11595
+    createPath: /calibration/create
+    timeoutSeconds: 30
+    fps: 1.0
+    callbackUrl: ""
+    dedupEnabled: true
+    dedupDays: 7
+
+  artifact:
+    localDir: out/docker/artifacts
+    urlPrefix: ""
+
+  result:
+    jsonlPath: out/docker/results/results.jsonl
+    mysqlDsn: ""
+    mysqlTable: uav_downward_photo_clip
+
+  devices: []

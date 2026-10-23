@@ -1,0 +1,8 @@
+out/
+uav-day-video-detector
+bin/
+dist/
+.DS_Store
+.env
+.env.local
+*.log

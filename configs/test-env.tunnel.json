@@ -1,0 +1,80 @@
+{
+  "timezone": "Asia/Shanghai",
+  "ruleVersion": "downward-photo-v3",
+  "targetModels": ["M30T", "M30TD"],
+  "logging": {
+    "level": "info",
+    "format": "json"
+  },
+  "schedule": {
+    "dailyAt": "03:00:00",
+    "runOnStart": false
+  },
+  "resilience": {
+    "retryAttempts": 2,
+    "retryBaseDelayMillis": 500,
+    "circuitFailureThreshold": 3,
+    "circuitOpenSeconds": 300,
+    "runTimeoutMinutes": 120,
+    "lockFile": "/tmp/uav-camera-calibration-scanner.lock"
+  },
+  "scan": {
+    "startTime": "09:00:00",
+    "endTime": "17:00:00",
+    "recordNoMatch": true,
+    "maxDevices": 0,
+    "queryChunkMinutes": 30
+  },
+  "rule": {
+    "durationSeconds": 20,
+    "maxSampleGapSeconds": 3,
+    "cameraMode": "0",
+    "lensType": "wide",
+    "targetGimbalTypes": ["M30T_CAMERA"],
+    "gimbalPitchMin": -90,
+    "gimbalPitchMax": -10,
+    "requireFlightStatus": false,
+    "minHeightMeters": 5,
+    "requireFlyTime": true,
+    "minTravelMeters": 100
+  },
+  "dbapi": {
+    "baseUrl": "http://127.0.0.1:18520/api",
+    "deviceListPath": "",
+    "historyPath": "/deviceAttrInfoBack",
+    "snapshotPath": "/uavDeviceAttrBackV2",
+    "sampleFile": "",
+    "timeoutSeconds": 90,
+    "headers": {}
+  },
+  "vod": {
+    "baseUrl": "http://127.0.0.1:18521",
+    "clipPath": "/vod/hls2mp4",
+    "clipDurationSeconds": 40,
+    "timeoutSeconds": 120,
+    "headers": {},
+    "dryRun": false
+  },
+  "calibration": {
+    "enabled": false,
+    "baseUrl": "http://121.196.145.43:11595",
+    "createPath": "/calibration/create",
+    "timeoutSeconds": 30,
+    "fps": 1.0,
+    "callbackUrl": ""
+  },
+  "artifact": {
+    "localDir": "out/test-env-20260706/artifacts",
+    "urlPrefix": ""
+  },
+  "result": {
+    "jsonlPath": "out/test-env-20260706/results.jsonl",
+    "mysqlDsn": "",
+    "mysqlTable": "uav_downward_photo_clip"
+  },
+  "devices": [
+    {"productKey": "zyrFih3kept", "deviceId": "34020000006011112200", "model": "M30T", "tags": {"DEVICE_MODEL": "M30T"}},
+    {"productKey": "zyrFih3kept", "deviceId": "34020000006011103400", "model": "M30T", "tags": {"DEVICE_MODEL": "M30T"}},
+    {"productKey": "zyrFih3kept", "deviceId": "34010000006011180900", "model": "M30T", "tags": {"DEVICE_MODEL": "M30T"}}
+  ]
+}

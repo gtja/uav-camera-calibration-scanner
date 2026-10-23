@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "uav-camera-calibration-scanner.fullname" . }}-config
+  labels:
+    {{- include "uav-camera-calibration-scanner.labels" . | nindent 4 }}
+data:
+  config.yml: |-
+{{ .Values.config | indent 4 }}
